@@ -1,0 +1,68 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-kueue-queues
+  annotations:
+    policies.kyverno.io/title: Generate Kueue Queues from ConfigMap
+    policies.kyverno.io/description: >-
+      When a ConfigMap with label kueue.x-k8s.io/queue-config=true is created
+      or updated, this policy generates a ClusterQueue and LocalQueue for the
+      namespace. The ConfigMap data drives resource quotas, cohort membership,
+      and queue settings.
+spec:
+  rules:
+    # --- Rule 1: Generate ClusterQueue ---
+    - name: generate-cluster-queue
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/queue-config: "true"
+      generate:
+        synchronize: true
+        apiVersion: kueue.x-k8s.io/v1beta2
+        kind: ClusterQueue
+        name: "cq-{{request.object.data.queueName || request.namespace}}"
+        data:
+          metadata:
+            labels:
+              managed-by: kyverno
+              source-namespace: "{{request.namespace}}"
+          spec:
+            queueingStrategy: "{{request.object.data.queueingStrategy || 'BestEffortFIFO'}}"
+            namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: "{{request.namespace}}"
+            preemption:
+              withinClusterQueue: LowerPriority
+            resourceGroups:
+              - coveredResources: "{{ keys(parse_yaml(request.object.data.quota)) }}"
+                flavors:
+                  - name: "{{request.object.data.resourceFlavorName || 'default-flavor'}}"
+                    resources: "{{ items(parse_yaml(request.object.data.quota), 'name', 'nominalQuota') }}"
+
+    # --- Rule 2: Generate LocalQueue ---
+    - name: generate-local-queue
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/queue-config: "true"
+      generate:
+        synchronize: true
+        apiVersion: kueue.x-k8s.io/v1beta2
+        kind: LocalQueue
+        name: "lq-{{request.object.data.queueName || request.namespace}}"
+        namespace: "{{request.namespace}}"
+        data:
+          metadata:
+            labels:
+              managed-by: kyverno
+          spec:
+            clusterQueue: "cq-{{request.object.data.queueName || request.namespace}}"

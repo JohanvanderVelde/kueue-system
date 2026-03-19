@@ -1,0 +1,32 @@
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: cq-migs-to-share
+spec:
+  cohortName: mig-sharing
+  queueingStrategy: BestEffortFIFO
+  # Geen namespaceSelector: deze CQ dient puur als leenpool voor het cohort
+  namespaceSelector: {}
+  preemption:
+    withinClusterQueue: LowerPriority
+    reclaimWithinCohort: Any
+    borrowWithinCohort:
+      policy: LowerPriority
+      maxPriorityThreshold: 100
+  resourceGroups:
+    - coveredResources:
+        - cpu
+        - memory
+        - nvidia.com/mig-1g.5gb
+        - nvidia.com/mig-2g.10gb
+      flavors:
+        - name: default-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 16
+            - name: memory
+              nominalQuota: 48Gi
+            - name: nvidia.com/mig-1g.5gb
+              nominalQuota: 4
+            - name: nvidia.com/mig-2g.10gb
+              nominalQuota: 4

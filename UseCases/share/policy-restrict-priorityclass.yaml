@@ -1,0 +1,45 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-kueue-workload-priorityclass
+  annotations:
+    policies.kyverno.io/title: Restrict kueue-workload PriorityClass to MIG share LocalQueues
+    policies.kyverno.io/description: >-
+      Alleen Jobs waarvan de LocalQueue verwijst naar een ClusterQueue in het
+      'mig-sharing' cohort mogen de PriorityClass 'kueue-workload' gebruiken.
+      Volledig dynamisch: nieuwe teams/namespaces worden automatisch toegestaan
+      zodra hun CQ in het juiste cohort zit.
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: deny-kueue-workload-without-share-lq
+      match:
+        any:
+          - resources:
+              kinds:
+                - batch/v1/Job
+      preconditions:
+        all:
+          - key: "{{request.object.spec.template.spec.priorityClassName || ''}}"
+            operator: Equals
+            value: kueue-workload
+          - key: "{{request.object.metadata.labels.\"kueue.x-k8s.io/queue-name\" || ''}}"
+            operator: NotEquals
+            value: ""
+      context:
+        - name: localqueue
+          apiCall:
+            urlPath: "/apis/kueue.x-k8s.io/v1beta2/namespaces/{{request.namespace}}/localqueues/{{request.object.metadata.labels.\"kueue.x-k8s.io/queue-name\"}}"
+        - name: clusterqueue
+          apiCall:
+            urlPath: "/apis/kueue.x-k8s.io/v1beta2/clusterqueues/{{localqueue.spec.clusterQueue}}"
+      validate:
+        message: >-
+          PriorityClass 'kueue-workload' is alleen toegestaan voor Jobs waarvan
+          de LocalQueue verwijst naar een ClusterQueue in het 'mig-sharing' cohort.
+        deny:
+          conditions:
+            all:
+              - key: "{{clusterqueue.spec.cohortName || ''}}"
+                operator: NotEquals
+                value: mig-sharing

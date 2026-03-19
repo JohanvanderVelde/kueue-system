@@ -1,0 +1,45 @@
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: cq-team-a
+spec:
+  cohortName: mig-sharing
+  queueingStrategy: BestEffortFIFO
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: team-a
+  preemption:
+    withinClusterQueue: LowerPriority
+    reclaimWithinCohort: Any
+    borrowWithinCohort:
+      policy: LowerPriority
+      maxPriorityThreshold: 100
+  resourceGroups:
+    - coveredResources:
+        - cpu
+        - memory
+        - nvidia.com/mig-1g.5gb
+        - nvidia.com/mig-2g.10gb
+      flavors:
+        - name: default-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 0
+              borrowingLimit: 4
+            - name: memory
+              nominalQuota: 0
+              borrowingLimit: 12Gi
+            - name: nvidia.com/mig-1g.5gb
+              nominalQuota: 0
+              borrowingLimit: 2
+            - name: nvidia.com/mig-2g.10gb
+              nominalQuota: 0
+              borrowingLimit: 2
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: lq-team-a
+  namespace: team-a
+spec:
+  clusterQueue: cq-team-a

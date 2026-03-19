@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-ml
+  labels:
+    kubernetes.io/metadata.name: team-ml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kueue-queue-config
+  namespace: team-ml
+  labels:
+    kueue.x-k8s.io/queue-config: "true"
+data:
+  # Queueing strategy: BestEffortFIFO (default) of StrictFIFO
+  queueingStrategy: "BestEffortFIFO"
+
+  # ResourceFlavor om te gebruiken (default-flavor bestaat op het cluster)
+  resourceFlavorName: "default-flavor"
+
+  # Naam voor de queues: ClusterQueue wordt cq-<queueName>, LocalQueue wordt lq-<queueName>
+  queueName: "team-ml"
+
+  # Resource quota (YAML string)
+  quota: |
+    cpu: "4"
+    memory: "6Gi"
