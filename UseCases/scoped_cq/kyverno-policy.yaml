@@ -10,7 +10,31 @@ metadata:
       namespace. The ConfigMap data drives resource quotas, cohort membership,
       and queue settings.
 spec:
+  validationFailureAction: Enforce
   rules:
+    # --- Rule 0: Block reserved queue name prefix 'shared-' ---
+    - name: deny-shared-prefix
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/queue-config: "true"
+      preconditions:
+        all:
+          - key: "{{request.object.data.queueName || ''}}"
+            operator: NotEquals
+            value: ""
+      validate:
+        message: >-
+          De queueName '{{request.object.data.queueName}}' mag niet beginnen met
+          'shared-'. Dit prefix is gereserveerd voor beheerde shared queues.
+        pattern:
+          data:
+            queueName: "!shared-*"
+
     # --- Rule 1: Generate ClusterQueue ---
     - name: generate-cluster-queue
       match:

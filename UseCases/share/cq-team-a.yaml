@@ -1,7 +1,7 @@
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: ClusterQueue
 metadata:
-  name: cq-team-a
+  name: cq-shared-team-a
 spec:
   cohortName: mig-sharing
   queueingStrategy: BestEffortFIFO
@@ -39,7 +39,7 @@ spec:
 apiVersion: kueue.x-k8s.io/v1beta2
 kind: LocalQueue
 metadata:
-  name: lq-team-a
+  name: lq-shared-team-a
   namespace: team-a
 spec:
-  clusterQueue: cq-team-a
+  clusterQueue: cq-shared-team-a

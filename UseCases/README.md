@@ -97,10 +97,10 @@ Een Kyverno **validation policy** zorgt ervoor dat alleen Jobs die een LocalQueu
 ```
 Cohort: mig-sharing
 ├── cq-migs-to-share    (gedeelde pool: cpu 16, mem 48Gi, 4x mig-1g, 4x mig-2g)
-├── cq-team-a           (nominalQuota 0, leent uit shared pool)
-│   └── lq-team-a       (namespace: team-a)
-└── cq-team-b           (nominalQuota 0, leent uit shared pool)
-    └── lq-team-b       (namespace: team-b)
+├── cq-shared-team-a    (nominalQuota 0, leent uit shared pool)
+│   └── lq-shared-team-a (namespace: team-a)
+└── cq-shared-team-b    (nominalQuota 0, leent uit shared pool)
+    └── lq-shared-team-b (namespace: team-b)
 ```
 
 ### BorrowingLimits per team-CQ
@@ -121,7 +121,7 @@ metadata:
   name: my-gpu-job
   namespace: team-a
   labels:
-    kueue.x-k8s.io/queue-name: lq-team-a
+    kueue.x-k8s.io/queue-name: lq-shared-team-a
 spec:
   template:
     spec:
