@@ -165,5 +165,5 @@ kubectl apply -f share/policy-restrict-priorityclass.yaml  # Kyverno validation 
 
 ## Verwijderen
 
-- **Use Case 1:** Wanneer de ConfigMap wordt verwijderd, verwijdert Kyverno automatisch de CQ en LQ (`synchronize: true`)
-- **Use Case 2:** Handmatig verwijderen met `kubectl delete -f share/`
+- **Use Case 1:** Handmatig verwijderen met `kubectl delete -f share/`
+- **Use Case 2:** Wanneer de ConfigMap wordt verwijderd, verwijdert Kyverno automatisch de CQ en LQ (`synchronize: true`)
