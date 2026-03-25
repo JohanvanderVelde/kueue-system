@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+  labels:
+    kubernetes.io/metadata.name: team-a
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kueue-shared-queue-request
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/shared-queue-request: "true"
+data: {}
+# Geen configuratie nodig — alle instellingen worden beheerd door de ClusterPolicy.
+# Het aanmaken van deze ConfigMap triggert:
+#   - ClusterQueue: cq-shared-team-a  (cohort: mig-sharing)
+#   - LocalQueue:   lq-shared-team-a
+# Verwijderen van deze ConfigMap ruimt beide resources op.

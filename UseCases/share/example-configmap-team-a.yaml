@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+  labels:
+    kubernetes.io/metadata.name: team-a
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kueue-shared-queue-config
+  namespace: team-a
+  labels:
+    kueue.x-k8s.io/shared-queue-config: "true"
+data:
+  # Naam voor de queues: CQ wordt cq-<queueName>, LQ wordt lq-<queueName>
+  # Moet beginnen met 'shared-'
+  queueName: "shared-team-a"
+
+  # Cohort om aan te sluiten (default: mig-sharing)
+  cohortName: "mig-sharing"
+
+  # Queueing strategy (default: BestEffortFIFO)
+  queueingStrategy: "BestEffortFIFO"
+
+  # ResourceFlavor (default: default-flavor)
+  resourceFlavorName: "default-flavor"
+
+  # Max priority threshold voor borrowWithinCohort (default: 100)
+  maxPriorityThreshold: "100"
+
+  # Resources: volledige specificatie met nominalQuota en borrowingLimit
+  resources: |
+    - name: cpu
+      nominalQuota: 0
+      borrowingLimit: 4
+    - name: memory
+      nominalQuota: 0
+      borrowingLimit: 12Gi
+    - name: nvidia.com/mig-1g.5gb
+      nominalQuota: 0
+      borrowingLimit: 2
+    - name: nvidia.com/mig-2g.10gb
+      nominalQuota: 0
+      borrowingLimit: 2

@@ -1,0 +1,97 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-shared-kueue-queues
+  annotations:
+    policies.kyverno.io/title: Generate Shared Kueue Queues from ConfigMap
+    policies.kyverno.io/description: >-
+      When a ConfigMap with label kueue.x-k8s.io/shared-queue-config=true is
+      created or updated, this policy generates a ClusterQueue (joined to a
+      cohort with borrowing) and a LocalQueue for the namespace.
+      Deleting the ConfigMap removes both generated resources.
+spec:
+  validationFailureAction: Enforce
+  rules:
+    # --- Rule 0: Block names without 'shared-' prefix ---
+    - name: enforce-shared-prefix
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/shared-queue-config: "true"
+      preconditions:
+        all:
+          - key: "{{request.object.data.queueName || ''}}"
+            operator: NotEquals
+            value: ""
+      validate:
+        message: >-
+          De queueName '{{request.object.data.queueName}}' voor een shared queue
+          ConfigMap moet beginnen met 'shared-'.
+        pattern:
+          data:
+            queueName: "shared-*"
+
+    # --- Rule 1: Generate ClusterQueue (cohort + borrowing) ---
+    - name: generate-shared-cluster-queue
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/shared-queue-config: "true"
+      generate:
+        synchronize: true
+        apiVersion: kueue.x-k8s.io/v1beta2
+        kind: ClusterQueue
+        name: "cq-{{request.object.data.queueName}}"
+        data:
+          metadata:
+            labels:
+              managed-by: kyverno
+              source-namespace: "{{request.namespace}}"
+          spec:
+            cohortName: "{{request.object.data.cohortName || 'mig-sharing'}}"
+            queueingStrategy: "{{request.object.data.queueingStrategy || 'BestEffortFIFO'}}"
+            namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: "{{request.namespace}}"
+            preemption:
+              withinClusterQueue: LowerPriority
+              reclaimWithinCohort: Any
+              borrowWithinCohort:
+                policy: LowerPriority
+                maxPriorityThreshold: "{{request.object.data.maxPriorityThreshold || '100' | to_number(@)}}"
+            resourceGroups:
+              - coveredResources: "{{ parse_yaml(request.object.data.resources)[*].name }}"
+                flavors:
+                  - name: "{{request.object.data.resourceFlavorName || 'default-flavor'}}"
+                    resources: "{{ parse_yaml(request.object.data.resources) }}"
+
+    # --- Rule 2: Generate LocalQueue ---
+    - name: generate-shared-local-queue
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              selector:
+                matchLabels:
+                  kueue.x-k8s.io/shared-queue-config: "true"
+      generate:
+        synchronize: true
+        apiVersion: kueue.x-k8s.io/v1beta2
+        kind: LocalQueue
+        name: "lq-{{request.object.data.queueName}}"
+        namespace: "{{request.namespace}}"
+        data:
+          metadata:
+            labels:
+              managed-by: kyverno
+          spec:
+            clusterQueue: "cq-{{request.object.data.queueName}}"
