@@ -1,0 +1,23 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-generate-shared-kueue-queues-fixed
+policies:
+  - ../kyverno-policy-fixed.yaml
+resources:
+  - resources.yaml
+results:
+  - policy: generate-shared-kueue-queues-fixed
+    rule: generate-shared-cluster-queue
+    resources:
+      - kueue-shared-queue-request
+    kind: ConfigMap
+    generatedResource: expected-clusterqueue.yaml
+    result: pass
+  - policy: generate-shared-kueue-queues-fixed
+    rule: generate-shared-local-queue
+    resources:
+      - kueue-shared-queue-request
+    kind: ConfigMap
+    generatedResource: expected-localqueue.yaml
+    result: pass

@@ -1,0 +1,9 @@
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: lq-shared-team-a
+  namespace: team-a
+  labels:
+    managed-by: kyverno
+spec:
+  clusterQueue: cq-shared-team-a
