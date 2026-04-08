@@ -1,5 +1,5 @@
 # Resource/MIG Sharing Strategieën
-De beschikbare resources zijn beperkt. Het idee is om een MIG pool te creeren die door iedereen gebruikt kan worden, zonder dat hiervoor eerst een aanvraag bij team ICE gedaan hoeft te worden en die dus ook niet in de resourceQuota zit. Door de beschikbare resources kan het voorkomen dat de vraag naar MIGs meer is dan de MIG pool bedraagt, hierdoor ontkom je niet aan queuing. Deze oplossing is dus alleen geschikt voor jobs die gescheduled kunnen worden.
+De beschikbare resources zijn beperkt. Het idee is om een MIG pool te creeren die door iedereen gebruikt kan worden, zonder dat hiervoor eerst een aanvraag bij het platform team gedaan hoeft te worden en die dus ook niet in de resourceQuota zit. Door de beschikbare resources kan het voorkomen dat de vraag naar MIGs meer is dan de MIG pool bedraagt, hierdoor ontkom je niet aan queuing. Deze oplossing is dus alleen geschikt voor jobs die gescheduled kunnen worden.
 
 Hierin zijn de volgende oplossingen mogelijk. Hierbij zouden we nog teams meer prioriteit kunnen geven en / of met activeDeadlineSeconds de duur van jobs kunnen beperken.
 
