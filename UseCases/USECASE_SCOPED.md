@@ -19,8 +19,6 @@ Elk team heeft zijn eigen, geïsoleerde queue-structuur. Er is geen cohort en ge
 | Voordelen | Nadelen |
 |---|---|
 | Queue-mechanisme: workloads wachten automatisch op capaciteit | Geen mogelijkheid om ongebruikte resources van andere teams te benutten |
-| Self-service: teams beheren hun eigen queue via een ConfigMap | Quota in ConfigMap moet synchroon blijven met ResourceQuota |
 | Geen preemptie door andere teams: volledige isolatie | Geen resource-sharing: ongebruikte capaciteit blijft onbenut |
 | Eenvoudig te begrijpen voor teams | Extra laag bovenop bestaande ResourceQuota |
 | Prioritering binnen de queue mogelijk | |
-| Wijzigingen in ConfigMap worden automatisch doorgevoerd | |
