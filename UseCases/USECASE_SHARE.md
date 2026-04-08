@@ -22,7 +22,6 @@ Per team een CQ met `nominalQuota: 0` en een lage `borrowingLimit` (bijv. 2).
 | Per-team limiet op MIG-gebruik | Ongebruikte MIGs niet benuttbaar boven cap |
 | Lopende workloads nooit gepreempt | In rustige tijden begrensde capaciteit per team |
 | Eenvoudig, voorspelbaar gedrag | Verspilling bij lage bezetting |
-| Kyverno self-service onboarding | |
 
 ## 3. Fair Sharing alleen (`fairsharing/`, geen borrowingLimit)
 
@@ -37,12 +36,12 @@ Per team een CQ met `nominalQuota: 0`, geen `borrowingLimit`, Fair Sharing enabl
 
 ## 4. Combinatie: Fair Sharing + hoge borrowingLimit
 
-Per team een CQ met `nominalQuota: 0` en een **hoge** `borrowingLimit` (bijv. 5 van 10), Fair Sharing enabled.
+Per team een CQ met `nominalQuota: 0` en een **hoge** `borrowingLimit`, Fair Sharing enabled.
 
 | Voordelen | Nadelen |
 |---|---|
-| Burst in rustige tijd (tot cap) | Nog steeds preemptie mogelijk (maar minder dan optie 3) |
-| Hard cap voorkomt totale monopolie | Workloads moeten herstartbaar zijn |
+| Burst in rustige tijd (tot borrowingLimit) | Nog steeds preemptie mogelijk (maar minder dan optie 3) |
+| BorrowingLimit voorkomt totale monopolie | Workloads moeten herstartbaar zijn |
 | Minder preempties dan pure Fair Sharing | Iets complexer qua configuratie |
 | Eerlijke verdeling bij meer vraag dan aanbod | borrowingLimit moet bewust gekozen worden |
 | Voorspelbaarder dan optie 3 | |
